@@ -2,6 +2,9 @@ package counting
 
 import (
 	"math/rand"
+	"runtime"
+	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -28,18 +31,44 @@ func Add(numbers []int) int64 {
 	return sum
 }
 
-//TODO: complete the concurrent version of add function.
-
 // AddConcurrent - concurrent code to add numbers
 func AddConcurrent(numbers []int) int64 {
-	var sum int64
+
 	// Utilize all cores on machine
+	numOfCores := runtime.NumCPU()
+	runtime.GOMAXPROCS(numOfCores)
 
-	// Divide the input into parts
+	var sum int64
+	max := len(numbers)
 
-	// Run computation for each part in seperate goroutine.
+	sizeOfParts := max / numOfCores
 
-	// Add part sum to cummulative sum
+	var wg sync.WaitGroup
 
+	for i := 0; i < numOfCores; i++ {
+
+		// Divide the input into parts
+		start := i * sizeOfParts
+		end := start + sizeOfParts
+		part := numbers[start:end]
+
+		// Run computation for each part in seperate goroutine.
+		wg.Add(1)
+		go func(nums []int) {
+			defer wg.Done()
+
+			var partSum int64
+
+			// Calculate sum for each part
+			for _, n := range nums {
+				partSum += int64(n)
+			}
+
+			// Add sum of each part to cummulative sum
+			atomic.AddInt64(&sum, partSum)
+		}(part)
+	}
+
+	wg.Wait()
 	return sum
 }

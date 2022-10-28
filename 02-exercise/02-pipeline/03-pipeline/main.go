@@ -1,6 +1,7 @@
 // generator() -> square() ->
-//														-> merge -> print
-//             -> square() ->
+//
+//															-> merge -> print
+//	            -> square() ->
 package main
 
 import (
@@ -56,13 +57,13 @@ func merge(cs ...<-chan int) <-chan int {
 
 func main() {
 	in := generator(2, 3)
-
+	done := make(chan struct{})
+	defer close(done)
 	c1 := square(in)
 	c2 := square(in)
 
 	out := merge(c1, c2)
 
 	// TODO: cancel goroutines after receiving one value.
-
 	fmt.Println(<-out)
 }

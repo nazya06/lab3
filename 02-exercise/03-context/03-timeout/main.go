@@ -1,20 +1,28 @@
 package main
 
 import (
+	"context"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 func main() {
 
 	// TODO: set a http client timeout
-
 	req, err := http.NewRequest("GET", "https://andcloud.io", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Create a context with a timeout of 100 milliseconds.
+	ctx, cancel := context.WithTimeout(req.Context(), 100*time.Millisecond)
+	defer cancel()
+
+	// Bind the new context into the request.
+	req = req.WithContext(ctx)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

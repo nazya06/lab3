@@ -30,7 +30,13 @@ func main() {
 
 	//TODO: implement concurrent read.
 	// allow multiple reads, writes holds the lock exclusively.
-
+	wg.Add(10)
+	for i := 0; i < 10; i++ {
+		go func() {
+			defer wg.Done()
+			fmt.Println(read())
+		}()
+	}
 	wg.Wait()
 	fmt.Println(balance)
 }
